@@ -10,16 +10,17 @@ function BookRegister() {
         authorId: null
     });
 
-    const [errorMessageResponse, setErrorMessageResponse] = useState(null);
-
     const [getAuthor, setGetAuthor] = useState([]);
+
+    const [errorBody, setErrorBody] = useState({
+        isbn: null,
+        name: null,
+        authorId: null,
+        category: null
+    });
 
     const [isRequest, setIsRequest] = useState(false);
     const [viewAlert, setViewAlert] = useState(false);
-    const [errorName, setErrorName] = useState(false);
-    const [errorCategory, setErrorCategory] = useState(false);
-    const [errorISBN, setErrorISBN] = useState(false);
-    const [errorAuthorId, setErrorAuthorId] = useState(false);
 
     useEffect(() => {
         getAuthors().then(value => {
@@ -46,18 +47,6 @@ function BookRegister() {
 
     const onChange = event => {
         const {value, name} = event.target;
-        if (event.target.id === "name") {
-            setErrorName(false)
-        }
-        if (event.target.id === "category") {
-            setErrorCategory(false)
-        }
-        if (event.target.id === "isbn") {
-            setErrorISBN(false)
-        }
-        if (event.target.id === "authorId") {
-            setErrorAuthorId(false)
-        }
         setBody(prevState => ({...prevState, [name]: value}));
     };
 
@@ -78,57 +67,51 @@ function BookRegister() {
         }
 
         try {
-            if (document.getElementById('name').value === '' || document.getElementById('name').value === null) {
-                setErrorName(true);
-            } else if (document.getElementById('category').value === '' || document.getElementById('category').value === null) {
-                setErrorCategory(true);
-            } else if (document.getElementById('isbn').value === '' || document.getElementById('isbn').value === null) {
-                setErrorISBN(true);
-            } else if(body.authorId === null) {
-                setErrorAuthorId(true);
-            } else {
-                setIsRequest(true);
-                setViewAlert(false);
-                await axios.post('http://localhost:8080/api/1.0/register/book', responseBody);
-                setErrorMessageResponse(null);
-                setErrorName(false)
-                setErrorCategory(false)
-                setErrorISBN(false)
-                setErrorAuthorId(false)
-                clearInput('name');
-                clearInput('isbn');
-                clearInput('category');
-                setIsRequest(false);
-                setViewAlert(true);
-                setBody(prevState => ({...prevState, authorId: null}));
-            }
-        } catch (e) {
-            setErrorMessageResponse(e.response.data.message);
+            setIsRequest(true);
+            setViewAlert(false);
+            await axios.post('http://localhost:8080/api/1.0/register/book', responseBody);
+            setBody({
+                name: null,
+                isbn: null,
+                category: null,
+                authorId: null
+            });
+            setErrorBody({
+                isbn: null,
+                name: null,
+                authorId: null,
+                category: null
+            });
+            clearInput('name');
+            clearInput('isbn');
+            clearInput('category');
             setIsRequest(false);
-            console.log(e);
+            setViewAlert(true);
+            setBody(prevState => ({...prevState, authorId: null}));
+        } catch (e) {
+            setErrorBody(e.response.data.body);
+            setIsRequest(false);
         }
     }
 
+    const {name, isbn, category, authorId} = errorBody;
     return (
         <form className="container">
             <h3 className="text-center">Book Register</h3>
             <div className="mb-3">
                 <label className="form-label">Book Name</label>
                 <input type="text" className="form-control" name="name" id="name" onChange={onChange}/>
-                {errorName && <small className="form-text text-danger">This field cannot be null.</small>}
-                {/* eslint-disable-next-line no-mixed-operators */}
-                {(errorMessageResponse && errorName ||
-                    <small id="emailHelp" className="form-text text-danger">{errorMessageResponse}</small>)}
+                {name && <small className="text-danger">{name}</small>}
             </div>
             <div className="mb-3">
                 <label className="form-label">Category</label>
                 <input type="text" className="form-control" name="category" id="category" onChange={onChange}/>
-                {errorCategory && <small className="form-text text-danger">This field cannot be null.</small>}
+                {category && <small className="text-danger">{category}</small>}
             </div>
             <div className="mb-3">
                 <label className="form-label">ISBN</label>
                 <input type="number" className="form-control" name="isbn" id="isbn" onChange={onChange}/>
-                {errorISBN && <small className="form-text text-danger">This field cannot be null.</small>}
+                {isbn && <small className="text-danger">{isbn}</small>}
             </div>
             <div className="mb-3">
                 <label className="form-label">Author ID</label>
@@ -137,12 +120,13 @@ function BookRegister() {
                     <option name="authorId" value={0}>
                         Please check.
                     </option>
-                    {getAuthor.map((author, index) =>
+                    {getAuthor.map((author) =>
                         <option key={author.id} name="authorId" value={author.id}>
                             {author.name}
                         </option>)}
                 </select>
-                {errorAuthorId && <small className="form-text text-danger">This field cannot be null.</small>}
+                {authorId && <small className="text-danger">{authorId}</small>}
+
             </div>
 
             {viewAlert && <div className="alert alert-success text-lg-center" role="alert">

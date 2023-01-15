@@ -16,14 +16,12 @@ function HomePage() {
     const searchButtonOnClick = async (e) => {
         e.preventDefault();
 
-        const postCriteria = criteria;
-
         try {
             const response = await axios.get('http://localhost:8080/api/1.0/book/search',
-                {params: {criteria: postCriteria}});
+                {params: {criteria: criteria}});
             setResponseBody(response.data);
         } catch (e) {
-            console.log("Hata bloguna dustu " + e);
+            console.log("Hata bloguna dustu" + e);
         }
     }
 

@@ -11,25 +11,18 @@ function AuthorRegister() {
         name: null
     });
 
-    const [errorMessageResponse, setErrorMessageResponse] = useState(null);
+    const [errorBody, setErrorBody] = useState({
+        age: null,
+        country: null,
+        gender: null,
+        name: null
+    });
 
     const [isRequest, setIsRequest] = useState(false);
     const [viewAlert, setViewAlert] = useState(false);
-    const [errorName, setErrorName] = useState(false);
-    const [errorAge, setErrorAge] = useState(false);
-    const [errorCountry, setErrorCountry] = useState(false);
 
     const onChange = event => {
         const {value, name} = event.target;
-        if (event.target.id === "name") {
-            setErrorName(false)
-        }
-        if (event.target.id === "age") {
-            setErrorAge(false)
-        }
-        if (event.target.id === "country") {
-            setErrorCountry(false)
-        }
         setBody(prevState => ({...prevState, [name]: value}));
     };
 
@@ -62,31 +55,35 @@ function AuthorRegister() {
         }
 
         try {
-            if (document.getElementById('name').value === '' || document.getElementById('name').value === null) {
-                setErrorName(true);
-            } else if (document.getElementById('age').value === '' || document.getElementById('age').value === null) {
-                setErrorAge(true);
-            } else if (document.getElementById('country').value === '' || document.getElementById('country').value === null) {
-                setErrorCountry(true);
-            } else {
-                setIsRequest(true);
-                setViewAlert(false);
-                await axios.post('http://localhost:8080/api/1.0/register/author', responseBody);
-                setErrorMessageResponse(null);
-                document.getElementById("MALE").checked = false;
-                document.getElementById("FEMALE").checked = false;
-                clearInput('name');
-                clearInput('age');
-                clearInput('country');
-                setIsRequest(false);
-                setViewAlert(true);
-            }
+            setIsRequest(true);
+            setViewAlert(false);
+            await axios.post('http://localhost:8080/api/1.0/register/author', responseBody);
+            setErrorBody({
+                age: null,
+                country: null,
+                gender: null,
+                name: null
+            });
+            setBody({
+                age: null,
+                country: null,
+                gender: null,
+                name: null
+            });
+            document.getElementById("MALE").checked = false;
+            document.getElementById("FEMALE").checked = false;
+            clearInput('name');
+            clearInput('age');
+            clearInput('country');
+            setIsRequest(false);
+            setViewAlert(true);
         } catch (e) {
-            setErrorMessageResponse(e.response.data.message);
-            console.log(e.response.data.message);
+            setErrorBody(e.response.data.body);
             setIsRequest(false);
         }
     }
+
+    const {age, country, gender, name} = errorBody;
 
     return (
         <form className="container">
@@ -96,29 +93,22 @@ function AuthorRegister() {
             <div className="mb-3">
                 <label className="form-label">Author Name</label>
                 <input type="text" className="form-control" name="name" id="name" onChange={onChange}/>
-                {errorName &&
-                    <small id="emailHelp" className="form-text text-danger">This field cannot be null.</small>}
-                {/* eslint-disable-next-line no-mixed-operators */}
-                {(errorMessageResponse && errorName ||
-                    <small id="emailHelp" className="form-text text-danger">{errorMessageResponse}</small>)}
+                {name && <small className="text-danger">{name}</small>}
             </div>
 
             <div className="mb-3">
                 <label className="form-label">Age</label>
                 <input type="number" className="form-control" name="age" id="age" onChange={onChange}/>
-                {errorAge && <small id="emailHelp" className="form-text text-danger">This field cannot be null.</small>}
+                {age && <small className="text-danger">{age}</small>}
             </div>
 
             <div className="mb-3">
                 <label className="form-label">Country</label>
                 <input type="text" className="form-control" name="country" id="country" onChange={onChange}/>
-                {errorCountry &&
-                    <small id="emailHelp" className="form-text text-danger">This field cannot be null.</small>}
+                {country && <small className="text-danger">{country}</small>}
             </div>
 
-            <div className="mb-1">
-                Gender
-            </div>
+            <label className="form-label d-flex">Gender</label>
             <div className="form-check form-check-inline ">
                 <input className="form-check-input" type="checkbox" name="gender" id="MALE" value="MALE"
                        onChange={onChangeGender}/>
@@ -130,8 +120,9 @@ function AuthorRegister() {
                        onChange={onChangeGender}/>
                 <label className="form-check-label">FEMALE</label>
             </div>
+            {gender && <small className="text-danger">{gender}</small>}
 
-            {viewAlert && <div className="alert alert-success text-lg-center" role="alert">
+            {viewAlert && <div className="alert alert-success text-lg-center mt-2" role="alert">
                 Successfully!
             </div>}
 
